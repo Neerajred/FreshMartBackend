@@ -589,32 +589,64 @@ app.put('/profile', authenticateToken, async (req, res) => {
 });
 
 // Upload Profile Image
-app.post('/profile/image', authenticateToken, upload.single('image'), async (req, res) => {
+// app.post('/profile/image', authenticateToken, upload.single('image'), async (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'No image file provided'
+//       });
+//     }
+
+//     const imagePath = `/public/uploads/profile/${req.file.filename}`;
+//     const updatedUser = await User.findByIdAndUpdate(
+//       req.user.id,
+//       { profileImg: imagePath },
+//       { new: true, select: '-password -__v' }
+//     );
+
+//     res.status(200).json({
+//       success: true,
+//       message: 'Profile image updated successfully',
+//       profileImg: imagePath,
+//       user: updatedUser
+//     });
+//   } catch (err) {
+//     handleError(res, err, 'Profile image upload');
+//   }
+// });
+
+
+//Updated Profile Image Upload
+
+app.post('/profile/image', authenticateToken, async (req, res) => {
   try {
-    if (!req.file) {
+    const { image } = req.body;
+
+    if (!image || !image.startsWith('data:image')) {
       return res.status(400).json({
         success: false,
-        message: 'No image file provided'
+        message: 'Invalid image data'
       });
     }
 
-    const imagePath = `/public/uploads/profile/${req.file.filename}`;
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
-      { profileImg: imagePath },
+      { profileImg: image }, // Store base64 string directly
       { new: true, select: '-password -__v' }
     );
 
     res.status(200).json({
       success: true,
       message: 'Profile image updated successfully',
-      profileImg: imagePath,
+      profileImg: image,
       user: updatedUser
     });
   } catch (err) {
     handleError(res, err, 'Profile image upload');
   }
 });
+
 
 // Get active devices
 app.get('/profile/devices', authenticateToken, async (req, res) => {
